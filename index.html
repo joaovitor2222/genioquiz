@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gênio Quiz - Artur Games e Mods</title>
+    <style>
+        /* CSS para estilizar o quiz (mesmo estilo de antes) */
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@400;700&display=swap');
+
+        :root {
+            --background-color: #1a1a1a;
+            --container-color: #2c2c2c;
+            --text-color: #f0f0f0;
+            --button-color: #4a4a4a;
+            --button-hover-color: #6a6a6a;
+            --correct-color: #28a745;
+            --incorrect-color: #dc3545;
+            --help-color: #007bff;
+            --help-hover-color: #0056b3;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Press Start 2P', cursive;
+            color: var(--help-color);
+        }
+
+        #quiz-container {
+            background-color: var(--container-color);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 800px;
+        }
+
+        #question-container {
+            margin-bottom: 20px;
+        }
+
+        #question {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+
+        #answers-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .answer-btn {
+            background-color: var(--button-color);
+            color: var(--text-color);
+            border: 2px solid var(--text-color);
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .answer-btn:hover:not(:disabled) {
+            background-color: var(--button-hover-color);
+            transform: scale(1.02);
+        }
+
+        .answer-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        #helps-container {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .help-btn {
+            background-color: var(--help-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .help-btn:hover:not(:disabled) {
+            background-color: var(--help-hover-color);
+        }
+
+        .help-btn:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+
+        /* --- MINIGAME --- */
+        #minigame-container {
+            padding: 20px;
+            text-align: center;
+        }
+
+        #minigame-progress {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        #minigame-timer {
+            font-size: 2.5em;
+            font-family: 'Press Start 2P', cursive;
+            margin: 20px 0;
+        }
+
+        #jump-btn {
+            background-color: var(--correct-color);
+            font-size: 1.5em;
+            padding: 20px 40px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            #answers-container {
+                grid-template-columns: 1fr;
+            }
+
+            #question {
+                font-size: 1.2em;
+            }
+
+            .answer-btn,
+            .help-btn {
+                font-size: 1em;
+            }
+        }
+
+        #farm-container {
+            padding: 20px;
+            text-align: center;
+        }
+
+        #farm-choices {
+            margin-bottom: 12px;
+        }
+
+        .farm-choice-btn {
+            background-color: var(--button-color);
+            color: var(--text-color);
+            border: 2px solid var(--text-color);
+            padding: 10px 14px;
+            margin: 6px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .farm-choice-btn:hover {
+            background-color: var(--button-hover-color);
+            transform: scale(1.02);
+        }
+
+        #farm-play-area {
+            margin-top: 8px;
+        }
+
+        #farm-iframe {
+            width: 100%;
+            height: 480px;
+            border: 2px solid #222;
+            border-radius: 10px;
+            margin-top: 12px;
+        }
+
+        #farm-timer {
+            font-size: 1.8em;
+            margin-top: 8px;
+            font-weight: bold;
+        }
+
+        @media (max-width:600px) {
+            #farm-iframe {
+                height: 320px;
+            }
+        }
+
+        /* --- VIDEO DO YOUTUBE (entre 10ª e 11ª pergunta) --- */
+        #video-container {
+            padding: 18px;
+            text-align: center;
+        }
+
+        #video-timer {
+            font-size: 1.6em;
+            margin-top: 8px;
+            font-weight: bold;
+        }
+
+        #quiz-video-iframe {
+            width: 100%;
+            height: 480px;
+            border: 2px solid #222;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        @media (max-width:600px) {
+            #quiz-video-iframe {
+                height: 320px;
+            }
+        }
+
+        .special-video-btn {
+            background: rgb(0, 107, 237);
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(0, 107, 237, 0.22);
+            transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        .special-video-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 22px rgba(0, 107, 237, 0.28);
+        }
+
+        .special-video-btn:active {
+            transform: translateY(0);
+            opacity: .95;
+        }
+
+        @media (max-width:600px) {
+            .special-video-btn {
+                width: 100%;
+                padding: 14px 16px;
+                font-size: 1.05rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Gênio Quiz do Artur</h1>
+
+    <div id="quiz-container">
+        <div id="question-container">
+            <h2 id="question">Carregando pergunta...</h2>
+            <div id="answers-container">
+            </div>
+        </div>
+
+        <div id="minigame-container" class="hidden">
+            <h2>MINIGAME: PULE 3 VEZES!</h2>
+            <div id="minigame-progress">Pulos: 0/3</div>
+            <p id="minigame-status">Prepare-se...</p>
+            <div id="minigame-timer">5</div>
+            <button id="jump-btn" class="help-btn">Pular!</button>
+        </div>
+
+        <div id="farm-container" class="hidden">
+            <h2>JOGO: FAZENDA</h2>
+            <p>Escolha por quanto tempo deseja jogar. <strong>150s ou mais = +1 dica</strong>.</p>
+
+            <div id="farm-choices">
+                <button class="farm-choice-btn" data-seconds="90">90 segundos</button>
+                <button class="farm-choice-btn" data-seconds="150">150 segundos</button>
+                <button class="farm-choice-btn" data-seconds="200">200 segundos</button>
+                <button class="farm-choice-btn" data-seconds="300">300 segundos</button>
+            </div>
+
+            <div id="farm-play-area" class="hidden">
+                <div id="farm-timer">Tempo restante: <span id="farm-timer-secs">0</span>s</div>
+                <iframe id="farm-iframe" src="" title="Fazenda (incorporado)"></iframe>
+            </div>
+        </div>
+
+        <!-- --- CONTAINER DO VÍDEO YOUTUBE (60s) --- -->
+        <div id="video-container" class="hidden">
+            <h2>Vídeo (assista por 60 segundos)</h2>
+            <div id="video-timer">Tempo restante: <span id="video-timer-secs">60</span>s</div>
+            <iframe id="quiz-video-iframe" src="https://www.youtube.com/embed/WVjy4usPqmA?si=phORSdQvEF8JuREj"
+                title="YouTube video player" frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
+            </iframe>
+        </div>
+
+
+        <div id="helps-container">
+            <button id="help-dica" class="help-btn">Dica (<span id="dica-count">1</span>)</button>
+            <button id="help-remover" class="help-btn">Remover 2 (<span id="remover-count">1</span>)</button>
+            <button id="help-segunda-chance" class="help-btn" disabled>Segunda Chance (<span
+                    id="segunda-chance-count">1</span>)</button>
+            <p>Segunda chance é gasta automaticamente ao errar.</p>
+        </div>
+    </div>
+
+    <div id="win-screen" class="hidden">
+        <h1>VOCÊ VENCEU!</h1>
+        <p>Parabéns, você é um verdadeiro gênio!</p>
+        <!-- Botão "Ver vídeo especial" -->
+        <button id="special-video-btn" class="special-video-btn"
+            aria-label="Ver vídeo especial para zerar o Gênio Quiz">
+            Ver vídeo especial
+        </button>
+
+    </div>
+
+
+    <script>
+        // JAVASCRIPT DO QUIZ
+
+        // =================================================================================
+        // ÁREA DE EDIÇÃO DAS PERGUNTAS
+        // =================================================================================
+        // controle de vídeo por índice (garante que cada pergunta só dispare o vídeo uma vez)
+        let videoPendingIndex = null;
+        const videoPlayedFor = {}; // videoPlayedFor[index] = true quando já tocou
+
+        const questions = [
+            {
+                question: "O que Artur Games e Mods postou primeiro?",
+                answers: [
+                    { text: "Vídeo de mod menu de PvZ", correct: false },
+                    { text: "Vídeo de tutorial de ARK", correct: true },
+                    { text: "Vídeo de Countryball", correct: false },
+                    { text: "Vídeo de Minecraft", correct: false }
+                ],
+                hint: "O jogo tem dinossauros."
+            },
+            {
+                question: "Qual desses planetas é azul?",
+                answers: [
+                    { text: "Saturno", correct: false },
+                    { text: "Júpiter", correct: false },
+                    { text: "Netuno", correct: true },
+                    { text: "Vênus", correct: false }
+                ],
+                hint: "É o último planeta do sistema solar."
+            },
+            {
+                question: "Qual desses canais é o parceiro com mais inscritos do Artur?",
+                answers: [
+                    { text: "Arabian Brazilian", correct: false },
+                    { text: "Goiás Countryballs", correct: true },
+                    { text: "Italiano", correct: false },
+                    { text: "ChinaBall", correct: false }
+                ],
+                hint: "O nome lembra um estado do Brasil.",
+                onCorrect: () => {
+                    alert("Se inscrevam no canal dos 4 pfvr 🙏🙏🙏");
+                }
+            },
+            {
+                question: "Qual é o canal do irmão do Artur?",
+                answers: [
+                    { text: "Paraguai Bola", correct: false },
+                    { text: "Ursopou Boludo", correct: false },
+                    { text: "Arabian Brazilian", correct: false },
+                    { text: "Isobu", correct: true }
+                ],
+                hint: "O nome do canal começa com a letra 'I'."
+            },
+            // MINIGAME acontece depois da pergunta 4 (índice 3)
+            {
+                question: "Qual o jogo mais demorado para zerar do Artur?",
+                answers: [
+                    { text: "Matemática do Terror", correct: false },
+                    { text: "Pets", correct: false },
+                    { text: "Survival", correct: true },
+                    { text: "Jogo dos Dinos", correct: false }
+                ],
+                hint: "O nome do jogo em inglês significa 'Sobrevivência'."
+            },
+            {
+                question: "Qual é o nome da prima do Artur?",
+                answers: [
+                    { text: "Bruna", correct: false },
+                    { text: "Larissa", correct: false },
+                    { text: "Manuela", correct: false },
+                    { text: "Bianca", correct: true }
+                ],
+                hint: "Já gravou com ele."
+            },
+            {
+                question: "Qual o modelo do celular do irmão do Artur (João)?",
+                answers: [
+                    { text: "A14 5G", correct: true },
+                    { text: "A13 5G", correct: false },
+                    { text: "A30", correct: false },
+                    { text: "A15 5G", correct: false }
+                ],
+                hint: "tem 5G."
+            },
+            //jogo fazenda minigame 90 segundos kkkk
+            {
+                question: "Qual o modelo do celular do Artur?",
+                answers: [
+                    { text: "A14 5G", correct: false },
+                    { text: "S21", correct: false },
+                    { text: "A30", correct: true },
+                    { text: "A16 5G", correct: false }
+                ],
+                hint: "não é 5G."
+            },
+            {
+                question: "Quem Deu Strike No Artur?",
+                answers: [
+                    { text: "Rodriguete", correct: false },
+                    { text: "Maxim Karpenko", correct: true },
+                    { text: "The End", correct: false },
+                    { text: "Raluca", correct: false }
+                ],
+                hint: "criou o jogo worldbox."
+            },
+            {
+                question: "Qual desses nao é uma estrela?",
+                answers: [
+                    { text: "Próxima Centauri", correct: false },
+                    { text: "Canis Majoris", correct: false },
+                    { text: "Sol", correct: false },
+                    { text: "Plutão", correct: true }
+                ],
+                hint: "é um planeta-anão."
+            },
+            //video
+            {
+                question: "Sobre qual mod é esse video?",
+                answers: [
+                    { text: "Project Stickers Normal", correct: false },
+                    { text: "Project Stickers Reborn", correct: false },
+                    { text: "Project Stickers Botzeiras", correct: true },
+                    { text: "Perci Stickers", correct: false }
+                ],
+                hint: "ta no titulo do video.",
+                playVideoBefore: true
+            },
+            {
+                question: "Qual Foi o Ultimo jogo lançado pelo Artur?",
+                answers: [
+                    { text: "Pets", correct: true },
+                    { text: "Geo defense", correct: false },
+                    { text: "RPG", correct: false },
+                    { text: "Fazenda", correct: false }
+                ],
+                hint: "ta no final do site dele kkkkk."
+            },
+            {
+                question: "Qual foi a pergunta q veio dps do minigame de fazenda?",
+                answers: [
+                    { text: "Quem Deu Strike No Artur?", correct: false },
+                    { text: "Qual desses nao é uma estrela?", correct: false },
+                    { text: "Qual o modelo do celular do Artur?", correct: true },
+                    { text: "qual o nome da prima do Artur?", correct: false }
+                ],
+                hint: "tem artur na pergunta kkkk."
+            },
+            {
+                question: "Qual Android e a versao do Artur?",
+                answers: [
+                    { text: "15", correct: false },
+                    { text: "11", correct: true },
+                    { text: "13", correct: false },
+                    { text: "14", correct: false }
+                ],
+                hint: "5+10-4=."
+            },
+            {
+                question: "Em que mês o Artur faz aniversário?",
+                answers: [
+                    { text: "janeiro", correct: false },
+                    { text: "novembro", correct: false },
+                    { text: "maio", correct: false },
+                    { text: "fevereiro", correct: true }
+                ],
+                hint: " mês mais perto do inicio do ano."
+            },
+            {
+                question: "Superpergunta: qual desses perdeu a conta no YouTube?",
+                answers: [
+                    { text: "isobu", correct: false },
+                    { text: "italiano", correct: false },
+                    { text: "mikael", correct: false },
+                    { text: "arabian", correct: true },
+                    { text: "artur", correct: false },
+                    { text: "caua ramos", correct: false }
+                ],
+                hint: "um inscrito do artur."
+            },
+            {
+                question: "qual dessas faz countryballs?",
+                answers: [
+                    { text: "Emily Vick", correct: false },
+                    { text: "Isabella", correct: true },
+                    { text: "Cherry Rar", correct: false },
+                    { text: "Bianca", correct: false }
+                ],
+                hint: "Parceira Do Artur Games e Mods."
+            },
+
+
+        ];
+        // =================================================================================
+        // FIM DA ÁREA DE EDIÇÃO
+        // =================================================================================
+
+        const questionElement = document.getElementById('question');
+        const answersContainer = document.getElementById('answers-container');
+        const helpsContainer = document.getElementById('helps-container');
+        const quizContainer = document.getElementById('quiz-container');
+        const minigameContainer = document.getElementById('minigame-container');
+        const winScreen = document.getElementById('win-screen');
+        const helpDicaBtn = document.getElementById('help-dica');
+        const helpRemoverBtn = document.getElementById('help-remover');
+        const dicaCountSpan = document.getElementById('dica-count');
+        const removerCountSpan = document.getElementById('remover-count');
+        const segundaChanceCountSpan = document.getElementById('segunda-chance-count');
+
+        // --- referências do container da fazenda ---
+        const farmContainer = document.getElementById('farm-container');
+        const farmPlayArea = document.getElementById('farm-play-area');
+        const farmIframe = document.getElementById('farm-iframe');
+        const farmTimerDisplay = document.getElementById('farm-timer-secs');
+        // --- Video do Quiz ---
+        const videoContainer = document.getElementById('video-container');
+        const videoTimerDisplay = document.getElementById('video-timer-secs');
+        const videoIframe = document.getElementById('quiz-video-iframe');
+
+        let videoPlayed = false;     // evita rodar várias vezes
+        let videoTimerId = null;
+        let videoRemaining = 60;     // duração padrão (60s)
+
+        // --- estado do farm ---
+        let farmPlayed = false;        // impede jogar várias vezes na mesma execução
+        let farmTimerId = null;
+        let farmRemaining = 0;
+        let farmBonusGranted = false;  // controla +1 dica apenas uma vez
+
+
+        let currentQuestionIndex = 0;
+        let helps = { dica: 1, remover: 1, segundaChance: 1 };
+        let segundaChanceAtivaNestaRodada = false;
+        let minigameSuccesses = 0; // Variável para o minigame
+
+        function startGame() {
+            currentQuestionIndex = 0;
+            minigameSuccesses = 0; // Reseta o progresso do minigame
+            winScreen.classList.add('hidden');
+            quizContainer.classList.remove('hidden');
+            // reset do minigame/farm ao iniciar
+            minigameSuccesses = 0;
+            farmPlayed = false;
+            farmBonusGranted = false;
+
+            checkForVeteranBonus();
+            loadNextQuestion();
+        }
+
+        function checkForVeteranBonus() {
+            const craftraft = localStorage.getItem('craftraft') === 'true';
+            const adubo = localStorage.getItem('adubo') === '1';
+            let baseHelps = { dica: 1, remover: 1, segundaChance: 1 };
+            if (craftraft && adubo) {
+                baseHelps = { dica: 6, remover: 6, segundaChance: 6 };
+            } else if (craftraft) {
+                baseHelps.dica += 3;
+                baseHelps.remover += 3;
+                baseHelps.segundaChance += 3;
+            } else if (adubo) {
+                baseHelps.dica += 2;
+                baseHelps.remover += 2;
+                baseHelps.segundaChance += 2;
+            }
+            helps = { ...baseHelps };
+            updateHelpCounters();
+        }
+
+        function loadNextQuestion() {
+            resetQuestionState();
+
+            // MINIGAME (como já tinha)
+            if (currentQuestionIndex === 4 && minigameSuccesses < 3) {
+                startMinigame();
+                return;
+            }
+
+            // FAZENDA (como já tinha)
+            if (currentQuestionIndex === 7 && !farmPlayed) {
+                startFarmSelection();
+                return;
+            }
+
+            // --- TRIGGER GENÉRICO: se a pergunta atual tiver playVideoBefore e ainda não tocou o vídeo ---
+            const q = questions[currentQuestionIndex];
+            if (q && q.playVideoBefore && !videoPlayedFor[currentQuestionIndex]) {
+                // começa o vídeo antes de renderizar a pergunta
+                startQuizVideo(currentQuestionIndex, 60); // 60s (altere se quiser outro tempo)
+                return;
+            }
+
+            // fim do quiz
+            if (currentQuestionIndex >= questions.length) {
+                showWinScreen();
+                return;
+            }
+
+            // renderiza a pergunta normalmente
+            const currentQuestion = questions[currentQuestionIndex];
+            questionElement.textContent = currentQuestion.question;
+            answersContainer.innerHTML = "";
+            currentQuestion.answers.forEach(answer => {
+                const button = document.createElement('button');
+                button.textContent = answer.text;
+                button.classList.add('answer-btn');
+                button.dataset.correct = answer.correct;
+                button.addEventListener('click', selectAnswer);
+                answersContainer.appendChild(button);
+            });
+        }
+
+
+        function resetQuestionState() {
+            segundaChanceAtivaNestaRodada = false;
+            document.getElementById('question-container').classList.remove('hidden');
+            helpsContainer.classList.remove('hidden');
+            minigameContainer.classList.add('hidden');
+            if (helps.dica > 0) helpDicaBtn.disabled = false;
+            if (helps.remover > 0) helpRemoverBtn.disabled = false;
+            // esconder a UI do farm por padrão
+            farmContainer.classList.add('hidden');
+            farmPlayArea.classList.add('hidden');
+
+        }
+
+        function startQuizVideo(indexToShowQuestionAfter, seconds = 60) {
+            // marca para não reentrar
+            videoPlayedFor[indexToShowQuestionAfter] = true;
+            videoPendingIndex = indexToShowQuestionAfter;
+
+            // esconde UI do quiz e mostra container do vídeo (assumindo que videoContainer e videoIframe existem)
+            document.getElementById('question-container').classList.add('hidden');
+            helpsContainer.classList.add('hidden');
+            minigameContainer.classList.add('hidden');
+            farmContainer.classList.add('hidden');
+
+            videoContainer.classList.remove('hidden');           // assegure que tem esse DOM
+            videoIframe.src = "https://www.youtube.com/embed/WVjy4usPqmA?rel=0"; // ou o seu ID
+            videoRemaining = seconds;
+            videoTimerDisplay.textContent = videoRemaining;
+
+            // inicia contador local
+            if (videoTimerId) clearInterval(videoTimerId);
+            videoTimerId = setInterval(() => {
+                videoRemaining--;
+                videoTimerDisplay.textContent = videoRemaining;
+                if (videoRemaining <= 0) {
+                    clearInterval(videoTimerId);
+                    endQuizVideo();
+                }
+            }, 1000);
+        }
+
+        function endQuizVideo() {
+            // limpa e esconde o vídeo
+            try { videoIframe.src = "about:blank"; } catch (e) { }
+            videoContainer.classList.add('hidden');
+
+            // NÃO incrementamos currentQuestionIndex aqui — queremos exibir a mesma pergunta
+            // que foi marcada com playVideoBefore.
+            // Apenas chamamos loadNextQuestion() que agora irá renderizar a pergunta pendente.
+            loadNextQuestion();
+        }
+
+        function selectAnswer(e) {
+            const selectedBtn = e.target;
+            const isCorrect = selectedBtn.dataset.correct === 'true';
+
+            if (isCorrect) {
+                selectedBtn.style.backgroundColor = 'var(--correct-color)';
+                if (questions[currentQuestionIndex].onCorrect) {
+                    questions[currentQuestionIndex].onCorrect();
+                }
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    loadNextQuestion();
+                }, 1000);
+            } else {
+                if (helps.segundaChance > 0 && !segundaChanceAtivaNestaRodada) {
+                    useSegundaChance(selectedBtn);
+                } else {
+                    selectedBtn.style.backgroundColor = 'var(--incorrect-color)';
+                    gameOver();
+                }
+            }
+        }
+
+        function gameOver() {
+            alert("Você errou! O quiz será reiniciado.");
+            // Não reinicia o jogo todo, apenas o índice da pergunta
+            currentQuestionIndex = 0;
+            minigameSuccesses = 0; // Reseta o progresso do minigame
+            loadNextQuestion(); // Carrega a primeira pergunta
+        }
+
+        function showWinScreen() {
+            quizContainer.classList.add('hidden');
+            winScreen.classList.remove('hidden');
+        }
+
+        function updateHelpCounters() {
+            dicaCountSpan.textContent = helps.dica;
+            removerCountSpan.textContent = helps.remover;
+            segundaChanceCountSpan.textContent = helps.segundaChance;
+            if (helps.dica <= 0) helpDicaBtn.disabled = true;
+            if (helps.remover <= 0) helpRemoverBtn.disabled = true;
+        }
+
+        helpDicaBtn.addEventListener('click', () => {
+            if (helps.dica > 0) {
+                alert(`Dica: ${questions[currentQuestionIndex].hint}`);
+                helps.dica--;
+                updateHelpCounters();
+            }
+        });
+
+        helpRemoverBtn.addEventListener('click', () => {
+            if (helps.remover > 0) {
+                helps.remover--;
+                updateHelpCounters();
+                const buttons = Array.from(answersContainer.children);
+                const wrongAnswers = buttons.filter(btn => btn.dataset.correct === 'false');
+                let removedCount = 0;
+                while (removedCount < 2 && wrongAnswers.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * wrongAnswers.length);
+                    wrongAnswers[randomIndex].style.visibility = 'hidden';
+                    wrongAnswers[randomIndex].disabled = true;
+                    wrongAnswers.splice(randomIndex, 1);
+                    removedCount++;
+                }
+            }
+        });
+
+        // --- Funções do Jogo da Fazenda ---
+        function startFarmSelection() {
+            // esconde quiz e mostra seleção
+            document.getElementById('question-container').classList.add('hidden');
+            helpsContainer.classList.add('hidden');
+            minigameContainer.classList.add('hidden');
+            farmContainer.classList.remove('hidden');
+            farmPlayArea.classList.add('hidden');
+
+            // conecta botões (safe para re-execução)
+            const choiceButtons = Array.from(document.querySelectorAll('.farm-choice-btn'));
+            choiceButtons.forEach(btn => {
+                btn.onclick = () => {
+                    const secs = parseInt(btn.dataset.seconds, 10);
+                    handleFarmChoice(secs);
+                };
+            });
+        }
+
+        function handleFarmChoice(seconds) {
+            if (farmPlayed) return; // já jogou
+            if (seconds >= 150 && !farmBonusGranted) {
+                alert("Você escolheu 150s ou mais — ganhou +1 dica para o quiz!");
+                helps.dica++;
+                updateHelpCounters();
+                farmBonusGranted = true;
+            } else {
+                alert(`Você escolheu ${seconds} segundos. Boa sorte!`);
+            }
+            startFarmPlay(seconds);
+        }
+
+        function startFarmPlay(seconds) {
+            farmPlayArea.classList.remove('hidden');
+            farmIframe.src = "https://joaovitor2222.github.io/fazenda/index.html";
+            farmRemaining = seconds;
+            farmTimerDisplay.textContent = farmRemaining;
+            farmPlayed = true;
+
+            farmTimerId = setInterval(() => {
+                farmRemaining--;
+                farmTimerDisplay.textContent = farmRemaining;
+                if (farmRemaining <= 0) {
+                    clearInterval(farmTimerId);
+                    endFarmPlay();
+                }
+            }, 1000);
+        }
+
+        function endFarmPlay() {
+            // limpa e esconde
+            farmIframe.src = "about:blank";
+            farmPlayArea.classList.add('hidden');
+            farmContainer.classList.add('hidden');
+
+            loadNextQuestion();
+        }
+
+
+        function useSegundaChance(wrongButton) {
+            helps.segundaChance--;
+            segundaChanceAtivaNestaRodada = true;
+            updateHelpCounters();
+            alert("Resposta errada! Mas você tem uma segunda chance. Tente de novo!");
+            wrongButton.style.visibility = 'hidden';
+            wrongButton.disabled = true;
+        }
+
+        // --- Lógica do Minigame (Mantida a versão de 3 pulos) ---
+        let minigameTimerId;
+        let canJump = false;
+        let hasJumped = false;
+        const progressElement = document.getElementById('minigame-progress');
+
+        function startMinigame() {
+            document.getElementById('question-container').classList.add('hidden');
+            helpsContainer.classList.add('hidden');
+            minigameContainer.classList.remove('hidden');
+
+            canJump = false;
+            hasJumped = false;
+            let prepTime = 5;
+
+            const timerElement = document.getElementById('minigame-timer');
+            const statusElement = document.getElementById('minigame-status');
+
+            progressElement.textContent = `Pulos: ${minigameSuccesses}/3`;
+            statusElement.textContent = "Prepare-se...";
+            timerElement.textContent = prepTime;
+
+            minigameTimerId = setInterval(() => {
+                prepTime--;
+                timerElement.textContent = prepTime;
+                if (prepTime <= 0) {
+                    clearInterval(minigameTimerId);
+                    runJumpPhase();
+                }
+            }, 1000);
+        }
+
+        function runJumpPhase() {
+            canJump = true;
+            let jumpTime = 3;
+            const timerElement = document.getElementById('minigame-timer');
+            const statusElement = document.getElementById('minigame-status');
+            statusElement.textContent = "Pule AGORA!";
+            timerElement.style.color = 'var(--incorrect-color)';
+            timerElement.textContent = jumpTime;
+
+            minigameTimerId = setInterval(() => {
+                jumpTime--;
+                timerElement.textContent = jumpTime;
+                if (jumpTime < 0) {
+                    clearInterval(minigameTimerId);
+                    if (!hasJumped) {
+                        minigameFail();
+                    }
+                }
+            }, 1000);
+        }
+
+        function playerJump() {
+            if (!canJump) {
+                alert("Calma! Não pode pular na preparação!");
+                return;
+            }
+            if (canJump && !hasJumped) {
+                hasJumped = true;
+                clearInterval(minigameTimerId);
+                minigameSuccesses++; // Incrementa o sucesso
+                progressElement.textContent = `Pulos: ${minigameSuccesses}/3`;
+
+                const statusElement = document.getElementById('minigame-status');
+                statusElement.textContent = "Bom pulo!";
+
+                setTimeout(() => {
+                    document.getElementById('minigame-timer').style.color = 'var(--text-color)';
+                    if (minigameSuccesses >= 3) {
+                        // Passou do minigame, vai para a próxima pergunta
+                        loadNextQuestion();
+                    } else {
+                        // Ainda não completou, inicia a próxima rodada do minigame
+                        startMinigame();
+                    }
+                }, 1500);
+            }
+        }
+
+        function minigameFail() {
+            alert("Você não pulou a tempo! O quiz será reiniciado.");
+            document.getElementById('minigame-timer').style.color = 'var(--text-color)';
+            gameOver();
+        }
+
+        document.getElementById('special-video-btn').addEventListener('click', function () {
+            if (confirm('Quer realmente assistir o vídeo especial?')) {
+                window.open('https://youtu.be/S8Ak_afWSvU', '_blank', 'noopener');
+            }
+        });
+
+
+
+        document.getElementById('jump-btn').addEventListener('click', playerJump);
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !minigameContainer.classList.contains('hidden')) {
+                e.preventDefault();
+                playerJump();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', startGame);
+    </script>
+</body>
+
+</html>
