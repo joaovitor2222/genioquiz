@@ -584,7 +584,7 @@
 
         function checkForVeteranBonus() {
             const craftraft = localStorage.getItem('craftraft') === 'true';
-            const adubo = localStorage.getItem('adubo') === '1';
+            const adubo = Number(localStorage.getItem('adubo')) >= 1;
             let baseHelps = { dica: 1, remover: 1, segundaChance: 1 };
             if (craftraft && adubo) {
                 baseHelps = { dica: 6, remover: 6, segundaChance: 6 };
