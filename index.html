@@ -569,16 +569,37 @@
         let minigameSuccesses = 0; // Variável para o minigame
 
         function startGame() {
+            // prompt inicial (input tipo alert)
+            const msg = "Se você zerou o jogo Survival e fez o minigame da fazenda, você terá ajudas extras: dicas/remover 2/segunda chances extras...\n\nConfirmar?";
+            const resposta = prompt(msg + "\n\nDigite 'sim' ou 'confirmar' para continuar.");
+
+            // se o jogador cancelou (clicou em cancelar) ou não digitou nada
+            if (resposta === null || resposta.trim() === "") {
+                alert("Início do jogo cancelado. Quando quiser, atualize a página ou clique para começar novamente.");
+                return; // não inicia o jogo
+            }
+
+            // normaliza resposta
+            const r = resposta.trim().toLowerCase();
+            if (r !== "sim" && r !== "confirmar" && r !== "confirm") {
+                alert("Resposta não reconhecida. O jogo não será iniciado. Digite 'sim' ou 'confirmar' para aceitar.");
+                return;
+            }
+
+            // Se chegou aqui, jogador confirmou — inicia o jogo normalmente
             currentQuestionIndex = 0;
-            minigameSuccesses = 0; // Reseta o progresso do minigame
             winScreen.classList.add('hidden');
             quizContainer.classList.remove('hidden');
-            // reset do minigame/farm ao iniciar
+
+            // Reset minigame/farm
             minigameSuccesses = 0;
             farmPlayed = false;
             farmBonusGranted = false;
 
+            // Verificar bônus de veterano no Local Storage
             checkForVeteranBonus();
+
+            // Carregar a primeira pergunta
             loadNextQuestion();
         }
 
@@ -939,5 +960,6 @@
         document.addEventListener('DOMContentLoaded', startGame);
     </script>
 </body>
+
 
 </html>
